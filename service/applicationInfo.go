@@ -1,21 +1,29 @@
-package main
+package service
 import(
 	"os/exec"
 	"strings"
 	"bufio"
-	"fmt"
+	"encoding/csv"
+	"io"
+	"log"
 )
 
-func ListInstalledApp(){
-	for _, d := range GetInstalledApp(){
-		fmt.Println(d)
+func CsvByLine(s string) (lines []string){
+	reader := csv.NewReader(strings.NewReader(s))
+	for {
+		lineA, error := reader.Read()
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			log.Fatal(error)
+		}
+		lines = append(lines, lineA...)
 	}
-
+	return
 }
 
-
 func GetInstalledApp() (csvData []string){
-	c := exec.Command("cmd", "/C", "wmic product get name,version,vendor /format:csv")
+	c := exec.Command("cmd", "/C", "wmic product get name,version,vendor,InstallDate /format:csv")
 	bs, _ := c.Output()
 	data :=BytesToString(bs)
 	csvData,_ = StringToLines(data)
